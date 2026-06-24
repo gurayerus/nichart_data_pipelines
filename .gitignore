@@ -1,0 +1,104 @@
+# ========================
+# Data files
+# ========================
+data_private/
+tmp/
+temp/
+output/
+test/
+## *.csv
+*.tsv
+*.xlsx
+*.xls
+## *.json
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.parquet
+*.feather
+*.mat
+*.nii
+*.nii.gz
+
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+*.so
+.env
+.venv
+env/
+venv/
+ENV/
+
+# ========================
+# Jupyter Notebooks
+# ========================
+.ipynb_checkpoints/
+*.ipynb
+
+# ========================
+# ML / Model files
+# ========================
+*.pt
+*.pth
+*.ckpt
+*.model
+*.pb
+*.onnx
+*.bin
+runs/
+wandb/
+mlruns/
+lightning_logs/
+
+# ========================
+# Logs & temp files
+# ========================
+*.log
+*.tmp
+*.temp
+*.out
+*.err
+logs/
+tmp/
+
+# ========================
+# OS / system
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# IDEs
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ========================
+# Bash
+# ========================
+*.sh~
+
+# ========================
+# Credentials / config
+# ========================
+.env
+*.pem
+*.key
+secrets/
+config/local*
