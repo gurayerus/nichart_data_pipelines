@@ -220,7 +220,7 @@ def main():
                     "--desc_file",  desc_file,
                     "--var_groups", INPUT_DIR / "dictionaries/dict_var_groups.json",
                     "--data_files", INPUT_DIR / "dictionaries/dict_data_files.json",
-                    "--root",        INPUT_DIR.parent,
+                    "--root",        INPUT_DIR,
                     "--output_root", OUTPUT_DIR,
                 ])
 
@@ -266,7 +266,7 @@ def main():
                     "--desc_file",  desc_file,
                     "--var_groups", INPUT_DIR / "dictionaries/dict_var_groups.json",
                     "--data_files", INPUT_DIR / "dictionaries/dict_data_files.json",
-                    "--root",        INPUT_DIR.parent,
+                    "--root",        INPUT_DIR,
                     "--output_root", OUTPUT_DIR,
                 ])
 
@@ -307,7 +307,7 @@ def main():
                     "--desc_file",  desc_file,
                     "--var_groups", INPUT_DIR / "dictionaries/dict_var_groups.json",
                     "--data_files", INPUT_DIR / "dictionaries/dict_data_files.json",
-                    "--root",        INPUT_DIR.parent,
+                    "--root",        INPUT_DIR,
                     "--output_root", OUTPUT_DIR,
                 ])
 
@@ -355,7 +355,7 @@ def main():
                     "--desc_file",  desc_file,
                     "--var_groups", INPUT_DIR / "dictionaries/dict_var_groups.json",
                     "--data_files", INPUT_DIR / "dictionaries/dict_data_files.json",
-                    "--root",        INPUT_DIR.parent,
+                    "--root",        INPUT_DIR,
                     "--output_root", OUTPUT_DIR,
                 ])
 
