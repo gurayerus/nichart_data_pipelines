@@ -1,6 +1,6 @@
 #! /bin/bash
 
-mkdir -pv ../test/output
+mkdir -pv ../test
 
 ## Anonymize data
 ## Note: Requires non-public data as input. Should be run in project folder
