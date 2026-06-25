@@ -6,13 +6,14 @@ Data processing pipelines for the iSTAGING 3.0 dataset.
 
 ```
 pipelines/
-  run_init.py          — Step 0: anonymize + sample the raw input CSV → input_anon/
-  run_pipelines.py     — Steps 1–8: full data processing pipeline
-  run_qc.py            — QC / distribution verification
+  s1_anonymize.py      — anonymize raw private data → anon output dir
+  s2_select_sample.py  — (optional) filter anonymized data to a sample
+  s3_run_pipelines.py  — full data processing pipeline (harmonization + SPARE)
+  s4_run_qc.py         — QC / distribution verification
 
   data_utils/          — shared data manipulation utilities
     data_init/src/
-      create_sample.py     anonymize full dataset and optionally draw a sample
+      anon_sample.py       build MRID/column anonymization mappings
     data_prep/src/
       split_input.py       split anonymized CSV into themed sub-tables
       calc_derived_rois.py compute derived H_DLMUSE ROI columns
@@ -24,11 +25,11 @@ pipelines/
 
   harmonization/src/   — univariate batch harmonization pipeline
     harm_train.py          fit OLS batch-effect models on training set
-    harm_test.py           apply models to produce harmonized values
+    harm_apply.py          apply models to produce harmonized values
 
   spare_scores/src/    — SPARE biomarker scoring pipeline
     spare_train.py         train linear SVM model (n-fold CV)
-    spare_test.py          apply model for inference
+    spare_apply.py         apply model for inference
 
   ref_centiles/        — reference centile computation (in progress)
 ```
@@ -36,32 +37,38 @@ pipelines/
 ## Typical workflow
 
 ```
-run_init.py  →  run_pipelines.py  →  run_qc.py
+s1_anonymize.py  →  s2_select_sample.py  →  s3_run_pipelines.py  →  s4_run_qc.py
 ```
 
-### Step 0 — `run_init.py`
+### Step 1 — `s1_anonymize.py`
 
-Anonymizes the raw iSTAGING CSV and optionally draws a sample.
-Produces the `input_anon/` directory consumed by all downstream steps.
+Anonymizes the raw private iSTAGING data (MRID and other sensitive columns).
+Copies `dictionaries/` and `tasks/` verbatim; anonymized CSVs go under `out_dir/data/`.
 
 ```bash
 cd datasets/istaging_3_0/pipelines
-python run_init.py
-# override defaults:
-python run_init.py --data_csv <full_csv> --sample_csv <mrid_list> --out_stem istaging_test
+python s1_anonymize.py --in_dir <private_dir> --in_csv <main.csv> --out_dir <anon_dir>
+python s1_anonymize.py --in_dir <private_dir> --in_csv <main.csv> --out_dir <anon_dir> -v
 ```
 
-Calls `data_utils/data_init/src/create_sample.py` with all paths resolved here.
-Omit `--sample_csv` to anonymize the full dataset without sub-sampling.
+### Step 2 — `s2_select_sample.py` (optional)
 
-### Steps 1–8 — `run_pipelines.py`
+Filters every CSV in the anonymized directory to a specific sample (by MRID list).
+Skip this step to run pipelines on the full anonymized dataset.
 
-Runs the complete processing chain end-to-end, reading from `input_anon/` and
-writing all outputs under `output/`.
+```bash
+python s2_select_sample.py --in_dir <anon_dir> --in_sample_csv <sample/list.csv> --out_dir <sel_dir>
+```
+
+### Steps — `s3_run_pipelines.py`
+
+Runs the complete processing chain end-to-end, reading from `input_dir` and
+writing all outputs under `output_dir/`.
 
 ```bash
 cd datasets/istaging_3_0/pipelines
-python run_pipelines.py
+python s3_run_pipelines.py --input_dir <anon_or_sel_dir> --output_dir <out_dir>
+python s3_run_pipelines.py --input_dir <anon_or_sel_dir> --output_dir <out_dir> -v
 ```
 
 | Step | Module | Description |
@@ -70,35 +77,37 @@ python run_pipelines.py
 | 2 | `data_utils/data_prep` / `calc_derived_rois.py` | Compute derived H_DLMUSE ROI columns |
 | 3 | `data_utils/data_selection` / `merge_files.py` | Build harmonization train + test CSVs |
 | 4 | `harmonization` / `harm_train.py` | Fit batch-effect harmonization models |
-| 5 | `harmonization` / `harm_test.py` | Apply models → harmonized values |
+| 5 | `harmonization` / `harm_apply.py` | Apply models → harmonized values |
 | 6 | `data_utils/data_selection` / `merge_files.py` | Build SPARE train + test CSVs per task |
 | 7 | `spare_scores` / `spare_train.py` | Train SPARE linear SVM models |
-| 8 | `spare_scores` / `spare_test.py` | Apply SPARE models → scores |
+| 8 | `spare_scores` / `spare_apply.py` | Apply SPARE models → scores |
 
-Final outputs are symlinked into `output/final/data/` and `output/final/models/`.
+Harmonization and combat steps are skipped automatically if the corresponding
+`tasks/<task>/` folder is absent from the input directory.
+Final outputs are symlinked into `output_dir/final/data/` and `output_dir/final/models/`.
 
-### QC — `run_qc.py`
+### QC — `s4_run_qc.py`
 
-Merges columns from `output/final/data/` and generates distribution plots per verification task.
+Merges columns from `output_dir/final/data/` and generates distribution plots per verification task.
 
 ```bash
 cd datasets/istaging_3_0/pipelines
-python run_qc.py
-python run_qc.py --tasks dlmuse601_distributions
+python s4_run_qc.py --in_dir <anon_or_sel_dir> --out_dir <out_dir> --task <task_name>
+python s4_run_qc.py --in_dir <anon_or_sel_dir> --out_dir <out_dir> --task <task_name> -v
 ```
 
 ## Output layout
 
 ```
-output/
+output_dir/
   final/
     data/            — symlinks to key CSVs (harmonized data, SPARE scores)
     models/          — symlinks to trained model .joblib files
   intermediate/
-    harmonization/   — harm_train / harm_test working files
+    harmonization/   — harm_train / harm_apply working files
     spare_scores/
       spare-ad-raw/  — per-task working files
       spare-ad-h/
       spare-ad-h2/
-  qc/                — distribution plots and merged verification CSVs
+  logs/              — timestamped log files
 ```
